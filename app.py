@@ -1,7 +1,11 @@
 import tkinter as tk
-from tkinter import filedialog
-from tkinter import simpledialog
+from tkinter import filedialog, simpledialog, ttk
+import subprocess
 import os
+
+# Create a new window
+WINDOW = tk.Tk()
+choicesVar = None
 
 JSON_FOLDER_PATH = (
     os.path.join(os.getenv("APPDATA"),"AppOrganizer")
@@ -10,76 +14,89 @@ JSON_FILE_PATH = (
     os.path.join(JSON_FOLDER_PATH, "apps.json")
 )
 
-def accessJSON(name: str, path: str):
-    # This function will be used to access the JSON file
-    # and load the apps into the window
-    f = open(JSON_FILE_PATH, "r+")
-    # if f.find("}") != -1:
-    #     f.write(f'"{name}": "{path}"'.format())
-    #     f.write("}")
-    #     f.close()
 
 def addAppToJSON():
-  filePath = filedialog.askopenfilename( title="Select an app", 
+    path = filedialog.askopenfilename( title="Select an app", 
                                            filetypes=[("Executable files", "*.exe"), 
                                                       ("Shortcuts", "*.lnk"), 
                                                       ("Batch files", "*.bat")])
-  fileName = simpledialog.askstring("App Name", "Enter the name of the app:") 
-  accessJSON(fileName, filePath)
+    if not path == "":
+        name = simpledialog.askstring("App Name", "Enter the name of the app:")
+        f = open(JSON_FILE_PATH, "r+")
+        contents = list(f.read())
 
+        if len(contents) > 3:
+            contents.insert(len(contents) - 1, ",")
+        contents.insert(len(contents) - 1, (f'"{name}": "{path}"'.format()))
+        f = open(JSON_FILE_PATH, "w")
+        f.write("".join(contents))
+        f.close()
+
+def addAppToList():
+  # foundApps = loadApps()
+  # foundApps.append("App 21")
+  # choicesVar.set(foundApps)
+  pass
+  # This function will add the app to the list
 
 def removeAppFromJSON():
   pass
-
-def addAppToList():
-  pass
+  # This function will remove the app from the JSON file
 
 def removeAppFromList():
   pass
+  # This function will remove the app from the list
+
+def searchApp() -> list[str]:
+  pass
+  # This function will search for the app in the JSON file
+
+def loadApps() -> list[str]:
+  pass
+  # This function will load the apps from the JSON file
 
 def initWindow():
     # This function initializes the window
     print("Initializing window...")
-
-    # Create a new window
-    window = tk.Tk()
-
+    
     # Set the title of the window
-    window.title("App Organizer")
+    WINDOW.title("App Organizer")
 
     # Set the size of the window
-    window.geometry("400x300")
-    window.resizable(False, False)
+    WINDOW.geometry("400x300")
+    WINDOW.resizable(False, False)
 
-    # Add a label to the window
-    tk.Label(window, text="Hello, World!").pack()
+    # Add elements to the window
+    ttk.Entry(WINDOW, width=35).grid(row=0, column=0, padx=2.5, pady=5)
+    tk.Button(WINDOW, text="Add App", command=lambda: addAppToJSON(), width=10).grid(row=0, column=1, padx=5, pady=5)
+    tk.Button(WINDOW, text="Remove App", command=lambda: removeAppFromJSON(), justify="right").grid(row=0, column=2, padx=5, pady=5)
+    ttk.Separator(WINDOW, orient="horizontal").grid(row=1, column=0, columnspan=30, sticky="ew", padx=5, pady=5)
+    var = tk.StringVar(value=loadApps())
+    l = tk.Listbox(WINDOW, listvariable=var, width=60, height=14)
+    l.grid(row=2, column=0, columnspan=3, padx=5, pady=5)
+    s = ttk.Scrollbar(WINDOW, orient="vertical", command=l.yview)
+    s.grid(row=2, column=2, sticky="nse", padx=10)
+    l.configure(yscrollcommand=s.set)
 
-    tk.Button(window, text="Add App", command=lambda: addAppToJSON()).pack()
-    tk.Button(window, text="Remove App", command=lambda: removeAppFromJSON()).pack()
-    tk.Button(window, text="Change Icon").pack()
+    return var
 
-    return window
-
-
-def loadApps():
-
-  
-  window.update
-  
-  pass
 
 if __name__ == "__main__":
-  
-  if not os.path.exists(JSON_FILE_PATH):
-    os.makedirs(JSON_FOLDER_PATH, exist_ok=True)
-    with open(JSON_FILE_PATH, 'w') as f:
-      f.write("{{}}".format())
-    
-  # Initialize the window (Add UI)
-  window = initWindow()
-  
-  # Add apps to the window
-  loadApps()
-  
-  # Run the window's event loop
-  window.mainloop()
+    file_Obj = None
+
+    if not os.path.exists(JSON_FILE_PATH):
+        os.makedirs(JSON_FOLDER_PATH, exist_ok=True)
+        file_Obj = open(JSON_FILE_PATH, "w")
+        file_Obj.write("{{}}".format())
+    else:
+      file_Obj = open(JSON_FILE_PATH, "r+")
+      
+    if len(file_Obj.read()) == 0:
+        file_Obj.write("{{}}".format())
+        file_Obj.close()
+
+    # Initialize the window (Add UI)
+    choicesVar = initWindow()
+
+    # Run the window's event loop
+    WINDOW.mainloop()
