@@ -48,12 +48,20 @@ def removeAppFromList():
   # This function will remove the app from the list
 
 def searchApp() -> list[str]:
-  pass
-  # This function will search for the app in the JSON file
+    pass
+    # This function will search for the app in the JSON file
 
-def loadApps() -> list[str]:
+def getNames() -> list[str]:
+    # Scrapes for the names
+    return [x.split(":")[0].replace('"', "") for x in open(JSON_FILE_PATH).read()[1:-1].split(",") ] 
+
+def getPaths() -> list[str]:
+    # Scrapes for the paths
+    return [x.split(": ")[1].replace('"', "") for x in open(JSON_FILE_PATH).read()[1:-1].split(",") ]
+
+def loadApps():
   pass
-  # This function will load the apps from the JSON file
+    # This function will load the apps from the JSON file
 
 def initWindow():
     # This function initializes the window
