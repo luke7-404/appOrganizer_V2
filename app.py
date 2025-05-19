@@ -38,7 +38,7 @@ JSON_FILE_PATH = (
 # This function will add the app from the JSON file
 def addAppToJSON():
     path = filedialog.askopenfilename( title="Select an app", 
-                                           filetypes=[("Executable files", "*.exe"), 
+                                           filetypes=[("All files", "*.*"),("Executable files", "*.exe"), 
                                                       ("Shortcuts", "*.lnk"), 
                                                       ("Batch files", "*.bat")])
     if not path == "":
@@ -89,7 +89,7 @@ def removeAppFromJSON():
         f.close()
 
         choicesVar.set(getNames()) # Update the listbox with the new list
-        
+
 # This function will search for the app in the JSON file
 def searchApp(evt):
     query = searchBar.get()
@@ -107,18 +107,23 @@ def getNames() -> list[str]:
 def getPaths() -> list[str]:
     return [x.split(": ")[1].replace('"', "").lstrip() for x in open(JSON_FILE_PATH).read()[1:-1].split(",") ]
 
-# This function will load the apps from the JSON file
-def loadApps():
-    index = l.curselection()[0]
-    try:
-        subprocess.Popen(getPaths()[index].lstrip(), shell=False)
-        WINDOW.quit()
-    except Exception as e:
-        print("Error: ", e)
-        messagebox.showerror("Error", "Could not open the app. Please check the path and try again.")
-
 count = 0
 previousSelection = None
+# This function will load the apps from the JSON file
+def loadApps():
+    global count, previousSelection
+    index = l.curselection()[0]
+    try:
+        path = os.path.normpath(getPaths()[index].lstrip())
+        print(path)
+        subprocess.Popen(path, shell=False)
+        # WINDOW.quit()
+    except Exception as e:
+        print("Error: ", e)
+        messagebox.showerror("Error", "Could not open the app. Error MSG: " + str(e))
+        count = 0
+        previousSelection = None
+
 def on_select(event):
     global count, previousSelection
     if l.curselection()[0] == previousSelection:
@@ -128,7 +133,7 @@ def on_select(event):
         count = 0
         loadApps()
     previousSelection = l.curselection()[0]    
-    
+
 
 if __name__ == "__main__":
     file_Obj = None
