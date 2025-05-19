@@ -17,7 +17,8 @@ WINDOW.geometry("400x300")
 WINDOW.resizable(False, False)
 
 # Add elements to the window
-ttk.Entry(WINDOW, width=35).grid(row=0, column=0, padx=2.5, pady=5)
+searchBar = ttk.Entry(WINDOW, width=35)
+searchBar.grid(row=0, column=0, padx=2.5, pady=5)
 tk.Button(WINDOW, text="Add App", command=lambda: addAppToJSON(), width=10).grid(row=0, column=1, padx=5, pady=5)
 # tk.Button(WINDOW, text="Remove App", command=lambda: removeAppFromJSON(), justify="right").grid(row=0, column=2, padx=5, pady=5)
 checkVar = tk.IntVar()
@@ -105,12 +106,14 @@ def removeAppFromJSON():
         r.toggle()
         # toggleRemoveApp()
         
-        
-        
-
-def searchApp() -> list[str]:
-    pass
-    # This function will search for the app in the JSON file
+# This function will search for the app in the JSON file
+def searchApp(evt):
+    query = searchBar.get()
+    filtered = []
+    for i in getNames():
+        if query.lower() in i.lower():
+            filtered.append(i)
+    choicesVar.set(filtered)
 
 # Scrapes for the names
 def getNames() -> list[str]:
@@ -144,6 +147,7 @@ if __name__ == "__main__":
     choicesVar = tk.StringVar(value=getNames())
     l.config(listvariable=choicesVar)
     l.bind("<<ListboxSelect>>", loadApps)
+    searchBar.bind("<KeyRelease>", searchApp)
 
     # Run the window's event loop
     WINDOW.mainloop()
