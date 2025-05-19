@@ -1,5 +1,5 @@
 import tkinter as tk
-from tkinter import filedialog, simpledialog, ttk
+from tkinter import filedialog, simpledialog, messagebox, ttk
 import subprocess
 import os
 
@@ -20,10 +20,7 @@ WINDOW.resizable(False, False)
 searchBar = ttk.Entry(WINDOW, width=35)
 searchBar.grid(row=0, column=0, padx=2.5, pady=5)
 tk.Button(WINDOW, text="Add App", command=lambda: addAppToJSON(), width=10).grid(row=0, column=1, padx=5, pady=5)
-# tk.Button(WINDOW, text="Remove App", command=lambda: removeAppFromJSON(), justify="right").grid(row=0, column=2, padx=5, pady=5)
-checkVar = tk.IntVar()
-r = tk.Checkbutton(WINDOW, text="Remove App", command=lambda: toggleRemoveApp(), justify="right", variable=checkVar)
-r.grid(row=0, column=3, padx=5, pady=5)
+tk.Button(WINDOW, text="Remove App", command=lambda: removeAppFromJSON(), justify="right").grid(row=0, column=2, padx=5, pady=5)
 ttk.Separator(WINDOW, orient="horizontal").grid(row=1, column=0, columnspan=30, sticky="ew", padx=5, pady=5)
 l = tk.Listbox(WINDOW, listvariable={}, width=60, height=14)
 l.grid(row=2, column=0, columnspan=3, padx=5, pady=5)
@@ -58,16 +55,6 @@ def addAppToJSON():
         
         choicesVar.set(getNames()) # Update the listbox with the new app
 
-def toggleRemoveApp():
-  
-    if checkVar.get() == 1:
-      l.unbind("<<ListboxSelect>>")
-      r.config(command=lambda: removeAppFromJSON())
-    else:
-        r.config(command=lambda: toggleRemoveApp())
-        l.bind("<<ListboxSelect>>", loadApps)
-        l.selection_clear(0) # Clear the selection
-        # print("Remove App is unchecked")
 
 # This function will remove the app from the JSON file
 def removeAppFromJSON():
@@ -103,9 +90,6 @@ def removeAppFromJSON():
 
         choicesVar.set(getNames()) # Update the listbox with the new list
         
-        r.toggle()
-        # toggleRemoveApp()
-        
 # This function will search for the app in the JSON file
 def searchApp(evt):
     query = searchBar.get()
@@ -124,11 +108,27 @@ def getPaths() -> list[str]:
     return [x.split(": ")[1].replace('"', "").lstrip() for x in open(JSON_FILE_PATH).read()[1:-1].split(",") ]
 
 # This function will load the apps from the JSON file
-def loadApps(evt):
+def loadApps():
     index = l.curselection()[0]
-    subprocess.Popen(getPaths()[index].lstrip(), shell=False)
-    WINDOW.quit()
+    try:
+        subprocess.Popen(getPaths()[index].lstrip(), shell=False)
+        WINDOW.quit()
+    except Exception as e:
+        print("Error: ", e)
+        messagebox.showerror("Error", "Could not open the app. Please check the path and try again.")
 
+count = 0
+previousSelection = None
+def on_select(event):
+    global count, previousSelection
+    if l.curselection()[0] == previousSelection:
+        count += 1
+    print(count)
+    if count == 1:
+        count = 0
+        loadApps()
+    previousSelection = l.curselection()[0]    
+    
 
 if __name__ == "__main__":
     file_Obj = None
@@ -146,7 +146,7 @@ if __name__ == "__main__":
 
     choicesVar = tk.StringVar(value=getNames())
     l.config(listvariable=choicesVar)
-    l.bind("<<ListboxSelect>>", loadApps)
+    l.bind("<<ListboxSelect>>", on_select)
     searchBar.bind("<KeyRelease>", searchApp)
 
     # Run the window's event loop
