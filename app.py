@@ -169,6 +169,19 @@ def show_menu(event):
     finally:
         menu.grab_release() # Release the grab so the menu can be closed
 
+def editFile():
+    fileBefore = getNames()
+    try:
+        os.startfile(JSON_FILE_PATH)
+        while True:
+            if getNames() != fileBefore and getNames() != [""]:
+                choicesVar.set(itemType())
+                l.config(state="normal")  # Enable the listbox if it was disabled
+                break
+    except Exception as e:
+        pass
+
+
 # initializes the window and its widgets
 def initWidgets():
     print("Initializing window...")
@@ -201,8 +214,9 @@ def initWidgets():
     settings.bind("<Button-1>", show_menu)
 
     menu.add_command(label="Remove App", command=lambda: removeAppFromJSON())
-    menu.add_command(label="Open JSON", command=lambda: os.startfile(JSON_FILE_PATH))
+    menu.add_command(label="Open JSON", command=lambda: editFile())
     menu.add_command(label="Search Paths", command=lambda: switchItemType())
+    menu.add_command(label="Refresh", command=lambda: choicesVar.set(itemType()))
 
 # main
 if __name__ == "__main__":
@@ -213,11 +227,11 @@ if __name__ == "__main__":
         os.makedirs(JSON_FOLDER_PATH, exist_ok=True)
         file_Obj = open(JSON_FILE_PATH, "w")
         file_Obj.write("{{}}".format())
-    else: # If the file exists, check if it is empty
-        file_Obj = open(JSON_FILE_PATH, "r+")
-        if len(file_Obj.read()) == 0: # if the file is empty, add {}
-            file_Obj.write("{{}}".format())
-            file_Obj.close()
+        
+    file_Obj = open(JSON_FILE_PATH, "r+")
+    if len(file_Obj.read()) == 0: # if the file is empty, add {}
+        file_Obj.write("{{}}".format())
+        file_Obj.close()
 
     # init the listbox with the names from the JSON file
     choicesVar = tk.StringVar(value=itemType())
